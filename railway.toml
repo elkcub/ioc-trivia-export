@@ -1,0 +1,5 @@
+[deploy]
+startCommand = "python airtable_to_gdrive.py"
+
+[cron]
+schedule = "0 6 * * *"
