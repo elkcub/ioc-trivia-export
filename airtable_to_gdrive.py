@@ -1,7 +1,7 @@
 import os
 import csv
 import io
-from datetime import datetime
+from datetime import datetime, timezone
 from pyairtable import Api
 from google.oauth2 import service_account
 from googleapiclient.discovery import build
@@ -13,7 +13,7 @@ AIRTABLE_BASE_ID = "apppMIezgkBvybCwx"
 AIRTABLE_TABLE_ID = "tblvfmM6U96Om3tAZ"
 AIRTABLE_VIEW_ID = "viw5ezbzfDCv7rDrP"
 
-GDRIVE_FOLDER_ID = "1R_ZwcBI1D1q86jYx-IQCiAOYFcvmXnzp"
+GDRIVE_FOLDER_ID = "1d8hmxKD4tYV-C31QLA4gEaKVQ6IDe5e1"
 
 # Google service account credentials JSON - paste the full JSON as an env var
 # e.g. GOOGLE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
@@ -73,7 +73,8 @@ def upload_to_gdrive(csv_content, filename):
     file = service.files().create(
         body=file_metadata,
         media_body=media,
-        fields="id, name, webViewLink"
+        fields="id, name, webViewLink",
+        supportsAllDrives=True
     ).execute()
 
     return file
@@ -81,7 +82,7 @@ def upload_to_gdrive(csv_content, filename):
 
 def generate_filename():
     # Format: Amondo-YY-MM-DD.csv
-    now = datetime.utcnow()
+    now = datetime.now(timezone.utc)
     return f"Amondo-{now.strftime('%y-%m-%d')}.csv"
 
 
