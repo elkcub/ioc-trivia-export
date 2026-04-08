@@ -15,15 +15,25 @@ AIRTABLE_VIEW_ID = "viw5ezbzfDCv7rDrP"
 
 GDRIVE_FOLDER_ID = "1d8hmxKD4tYV-C31QLA4gEaKVQ6IDe5e1"
 
-# Google service account credentials JSON - paste the full JSON as an env var
-# e.g. GOOGLE_SERVICE_ACCOUNT_JSON='{"type":"service_account",...}'
 GOOGLE_CREDENTIALS_JSON = os.environ["GOOGLE_SERVICE_ACCOUNT_JSON"]
+
+FIELDS = [
+    "language",
+    "action",
+    "signup_source",
+    "provider",
+    "id",
+    "country",
+    "birth_date",
+    "registration_date",
+    "email",
+]
 
 
 def fetch_airtable_records():
     api = Api(AIRTABLE_PAT)
     table = api.table(AIRTABLE_BASE_ID, AIRTABLE_TABLE_ID)
-    records = table.all(view=AIRTABLE_VIEW_ID)
+    records = table.all(view=AIRTABLE_VIEW_ID, fields=FIELDS)
     return records
 
 
@@ -31,17 +41,8 @@ def records_to_csv(records):
     if not records:
         raise ValueError("No records returned from Airtable")
 
-    # Collect all field names across all records (some may be sparse)
-    all_fields = []
-    seen = set()
-    for record in records:
-        for key in record["fields"].keys():
-            if key not in seen:
-                all_fields.append(key)
-                seen.add(key)
-
     output = io.StringIO()
-    writer = csv.DictWriter(output, fieldnames=all_fields, extrasaction="ignore")
+    writer = csv.DictWriter(output, fieldnames=FIELDS, extrasaction="ignore")
     writer.writeheader()
     for record in records:
         writer.writerow(record["fields"])
@@ -81,7 +82,6 @@ def upload_to_gdrive(csv_content, filename):
 
 
 def generate_filename():
-    # Format: Amondo-YY-MM-DD.csv
     now = datetime.now(timezone.utc)
     return f"Amondo-{now.strftime('%y-%m-%d')}.csv"
 
